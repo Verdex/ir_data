@@ -55,8 +55,101 @@ pub fn parse_data( input : &str ) -> Result<Data, ParseError> {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
+    fn should_handle_nil() {
+        let res = parse_data( "nil" );
+        assert!( matches!( res, Ok(Data::Nil)) )
+    }
+
+    #[test]
+    fn should_handle_number() {
+        let res = parse_data( "1.2" );
+
+        match res {
+            Ok(Data::Number(n)) => assert_eq!( n, "1.2" ),
+            _ => panic!( "Expected Number(1.2)" ),
+        }
+    }
+
+    #[test]
+    fn should_handle_string() {
+        let res = parse_data( r#""blah""# );
+
+        match res {
+            Ok(Data::Str(s)) => assert_eq!( s, "blah" ),
+            _ => panic!( "Expected Str(\"blah\")" ),
+        }
+    }
+
+    #[test]
+    fn should_handle_symbol() {
+        let res = parse_data( "blah" );
+
+        match res {
+            Ok(Data::Symbol(s)) => assert_eq!( s, "blah" ),
+            _ => panic!( "Expected Symbol(blah)" ),
+        }
+    }
+
+    #[test]
+    fn should_handle_cons() {
+        let res = parse_data( "blah()" );
+
+        match res {
+            Ok(Data::Cons{name, params}) => {
+                assert_eq!( name, "blah" );
+                assert_eq!( params.len(), 0 );
+            },
+            _ => panic!( "Expected Symbol(blah)" ),
+        }
+    }
+
+    #[test]
+    fn should_handle_cons_with_params() {
+        let res = parse_data( "blah(alpha, beta)" );
+
+        match res {
+            Ok(Data::Cons{name, params}) => {
+                assert_eq!( name, "blah" );
+                assert_eq!( params.len(), 2 );
+                match &params[0] {
+                    Data::Symbol(x) => assert_eq!( x, "alpha" ),
+                    _ => panic!( "expected alpha" ),
+                }
+
+                match &params[1] {
+                    Data::Symbol(x) => assert_eq!( x, "beta" ),
+                    _ => panic!( "expected beta" ),
+                }
+            },
+            _ => panic!( "Expected Symbol(blah)" ),
+        }
+    }
+
+    #[test]
+    fn should_handle_cons_with_nested_params() {
+        let res = parse_data( "blah(alpha(nest), beta)" );
+
+        match res {
+            Ok(Data::Cons{name, params}) => {
+                assert_eq!( name, "blah" );
+                assert_eq!( params.len(), 2 );
+                match &params[0] {
+                    Data::Cons{ name, params } => {
+                        assert_eq!( name, "alpha" );
+                        assert_eq!( params.len(), 1 );
+                    },
+                    _ => panic!( "expected alpha" ),
+                }
+
+                match &params[1] {
+                    Data::Symbol(x) => assert_eq!( x, "beta" ),
+                    _ => panic!( "expected beta" ),
+                }
+            },
+            _ => panic!( "Expected Symbol(blah)" ),
+        }
     }
 }
