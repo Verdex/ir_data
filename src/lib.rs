@@ -53,6 +53,22 @@ pub fn parse_data( input : &str ) -> Result<Data, ParseError> {
     parse( &mut parser )
 }
 
+pub fn to_pretty_string( data : &Data ) -> String {
+    match data {
+        Data::Nil => "nil".to_string(),
+        Data::Number(num) => num.clone(),
+        Data::Str(s) => format!("\"{}\"", s),
+        Data::Symbol(s) => s.clone(),
+        Data::Cons { name, params } => 
+            format!( "{}({})", 
+                name, 
+                params.iter()
+                      .map(to_pretty_string)
+                      .collect::<Vec<_>>()
+                      .join(", ") ),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
