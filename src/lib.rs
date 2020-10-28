@@ -1,9 +1,7 @@
 
 extern crate parse_input;
-extern crate error_reporter;
 
-use parse_input::{Input, ParseError, PSym};
-use error_reporter::ErrorReport;
+use parse_input::{Input, ParseError};
 
 #[derive(Debug)]
 pub enum Data {
@@ -47,14 +45,12 @@ fn parse( parser : &mut Input ) -> Result<Data, ParseError> {
                     ] )
 }
 
-pub fn parse_data( input : &str ) -> Result<Data, ErrorReport> {
+pub fn parse_data( input : &str ) -> Result<Data, ParseError> {
 
     let i = input.char_indices().collect::<Vec<_>>();
     let mut parser = Input::new( &i );
     
-    let result = parse( &mut parser );
-
-    Ok(Data::Nil)
+    parse( &mut parser )
 }
 
 #[cfg(test)]
