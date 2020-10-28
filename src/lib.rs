@@ -54,18 +54,19 @@ pub fn parse_data( input : &str ) -> Result<Data, ParseError> {
 }
 
 pub fn to_pretty_string( data : &Data ) -> String {
+// TODO need to put in tabs
     match data {
         Data::Nil => "nil".to_string(),
         Data::Number(num) => num.clone(),
         Data::Str(s) => format!("\"{}\"", s),
         Data::Symbol(s) => s.clone(),
         Data::Cons { name, params } => 
-            format!( "{}({})", 
+            format!( "{}(\n{})", 
                 name, 
                 params.iter()
                       .map(to_pretty_string)
                       .collect::<Vec<_>>()
-                      .join(", ") ),
+                      .join(",\n") ),
     }
 }
 
