@@ -26,14 +26,25 @@ fn parse_nil( parser : &mut Input ) -> Result<Data, ParseError> {
     }
 }
 
-fn parse( parser : &mut Input ) -> Result<Data, ParseError> {
-    let result = parser.choice( &[ parse_nil
-                                 , |p| Ok(Data::Number(p.parse_number()?.value))
-                                 , |p| Ok(Data::Str(p.parse_string()?.value))
-                                 , |p| Ok(Data::Symbol(p.parse_symbol()?.value))
-                                 ] );
+fn parse_cons( parser : &mut Input ) -> Result<Data, ParseError> {
+    let name = parser.parse_symbol()?.value;
 
-    Ok(Data::Nil)
+    parser.expect("(")?;
+
+    let params = parser.list( parse )?;
+
+    parser.expect(")")?;
+
+    Ok( Data::Cons { name, params } )
+}
+
+fn parse( parser : &mut Input ) -> Result<Data, ParseError> {
+    parser.choice( &[ parse_nil
+                    , parse_cons
+                    , |p| Ok(Data::Number(p.parse_number()?.value))
+                    , |p| Ok(Data::Str(p.parse_string()?.value))
+                    , |p| Ok(Data::Symbol(p.parse_symbol()?.value))
+                    ] )
 }
 
 pub fn parse_data( input : &str ) -> Result<Data, ErrorReport> {
