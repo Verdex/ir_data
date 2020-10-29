@@ -54,20 +54,28 @@ pub fn parse_data( input : &str ) -> Result<Data, ParseError> {
 }
 
 pub fn to_pretty_string( data : &Data ) -> String {
-// TODO need to put in tabs
-    match data {
-        Data::Nil => "nil".to_string(),
-        Data::Number(num) => num.clone(),
-        Data::Str(s) => format!("\"{}\"", s),
-        Data::Symbol(s) => s.clone(),
-        Data::Cons { name, params } => 
-            format!( "{}(\n{})", 
-                name, 
-                params.iter()
-                      .map(to_pretty_string)
-                      .collect::<Vec<_>>()
-                      .join(",\n") ),
+    fn helper( data : &Data, tabs : usize ) -> String {
+        match data {
+            Data::Nil => "nil".to_string(),
+            Data::Number(num) => num.clone(),
+            Data::Str(s) => format!("\"{}\"", s),
+            Data::Symbol(s) => s.clone(),
+            Data::Cons { name, params } if params.len() == 0 => format!("{}()", name),
+            Data::Cons { name, params } => {
+                let spaces = "    ".repeat(tabs);
+
+                format!( "{}(\n{}{})", 
+                    name, 
+                    spaces,
+                    params.iter()
+                          .map(|d| helper(d, tabs + 1))
+                          .collect::<Vec<_>>()
+                          .join(&format!(",\n{}", spaces)) )
+            }
+        }
     }
+
+    helper( data, 1 )
 }
 
 #[cfg(test)]
